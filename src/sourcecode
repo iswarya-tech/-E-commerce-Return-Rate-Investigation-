@@ -1,1 +1,99 @@
+from google.colab import files
+uploaded = files.upload()
+
+import pandas as pd
+df = pd.read_csv('/content/Ecommerce_Return_Investigation_Dataset.csv')
+df.head()
+df.shape
+df.isnull().sum()
+df.duplicated().sum()
+
+total_orders = len(df)
+print("Total Orders:", total_orders)
+
+returned_products = (df['Return_Status'] == 'Returned').sum()
+print(returned_products)
+
+return_percentage = (returned_products / total_orders) * 100
+
+print("Return Percentage:", round(return_percentage, 2), "%")
+
+df[['Product_Price','Delivery_Days','Customer_Rating']].mean()
+df[['Product_Price','Delivery_Days','Customer_Rating']].median()
+df[['Product_Price','Delivery_Days','Customer_Rating']].std()
+df[['Product_Price','Delivery_Days','Customer_Rating']].quantile([0.25,0.5,0.75])
+import matplotlib.pyplot as plt
+df['Product_Price'].hist()
+plt.show()
+
+print(pd.crosstab(df['Product_Category'], df['Return_Status']))
+print(df.groupby('Return_Status')['Delivery_Days'].mean())
+print(df.groupby('Return_Status')['Discount_Percent'].mean())
+print(df.groupby('Return_Status')['Customer_Rating'].mean())
+df['Product_Category'].value_counts().plot(kind='bar')
+df['Product_Price'].hist()
+df.boxplot(column='Product_Price')
+import seaborn as sns
+import matplotlib.pyplot as plt
+sns.heatmap(df.corr(numeric_only=True), annot=True)
+plt.show()
+
+import matplotlib.pyplot as plt
+plt.boxplot(df['Delivery_Days'])
+plt.title("Boxplot of Delivery Days")
+plt.show()
+Q1 = df['Product_Price'].quantile(0.25)
+Q3 = df['Product_Price'].quantile(0.75)
+IQR = Q3 - Q1
+outliers = df[(df['Product_Price'] < Q1 - 1.5*IQR) |
+              (df['Product_Price'] > Q3 + 1.5*IQR)]
+print("Number of Outliers:", len(outliers))
+from scipy.stats import zscore
+z_scores = zscore(df['Delivery_Days'])
+outliers = df[abs(z_scores) > 3]
+print("Outliers:", len(outliers))
+from scipy.stats import zscore
+
+z_scores = zscore(df['Delivery_Days'])
+outliers = df[abs(z_scores) > 3]
+
+print("Outliers:", len(outliers))
+from scipy.stats import ttest_ind
+
+returned = df[df['Return_Status'] == 'Returned']['Delivery_Days']
+not_returned = df[df['Return_Status'] == 'Not Returned']['Delivery_Days']
+
+t_stat, p_value = ttest_ind(returned, not_returned)
+
+print("P-value:", p_value)
+from scipy.stats import f_oneway
+
+electronics = df[df['Product_Category']=='Electronics']['Delivery_Days']
+fashion = df[df['Product_Category']=='Fashion']['Delivery_Days']
+home = df[df['Product_Category']=='Home']['Delivery_Days']
+
+f_stat, p_value = f_oneway(electronics, fashion, home)
+
+print("F-statistic:", f_stat)
+print("P-value:", p_value)
+from scipy.stats import chi2_contingency
+
+table = pd.crosstab(df['Product_Category'], df['Return_Status'])
+
+chi2, p_value, dof, expected = chi2_contingency(table)
+
+print("Chi-Square Value:", chi2)
+print("P-value:", p_value)
+high_return = df[df['Return_Status'] == 'Returned']
+print(high_return['Customer_ID'].value_counts())
+high_return = df[df['Return_Status'] == 'Returned']
+print(high_return['Customer_ID'].value_counts())
+discount_customers = df[df['Discount_Percent'] >= 30]
+print(discount_customers.head())
+premium_customers = df[df['Product_Price'] > 3000]
+print(premium_customers.head())
+delayed_customers = df[df['Delivery_Days'] > 7]
+print(delayed_customers.head())
+
+
 
